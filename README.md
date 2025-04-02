@@ -1,5 +1,6 @@
 # Wear_Leveling_Simulator
 WARNING: This code does not work yet. It needs to be debugged. Please do not use it.
+
 Contact: aniketpach@gmail.com
 
 Project Description:
@@ -23,4 +24,5 @@ Static Wear Leveling Algorithm: We first decide whether we should even trigger r
 
 
 Note that the code is heavily commented and documented, for my own reference.
+
 Any suggestions or constructive criticism is most welcome.
