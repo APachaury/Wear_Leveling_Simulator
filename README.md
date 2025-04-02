@@ -7,17 +7,10 @@
 ---
 
 ## **Project Description**
-This project is a **simulator** designed to visualize the effect of a **Wear Leveling Algorithm** on the lifetime of a **Flash Memory** device. It considers a **P/E (Program/Erase) cycle threshold**, beyond which memory pages are considered **bad** (*referred to as "dead pages"*).
+This project is a simulator designed to visualize the effect of a Wear Leveling Algorithm on the lifetime of a Flash Memory device. It considers a P/E (Program/Erase) cycle threshold, beyond which memory pages are considered bad (which I call "dead pages").
 
-### **Features:**
-- Users can input:
-  - Memory architecture
-  - P/E cycle threshold
-  - Various other parameters affecting the algorithm
-- The simulator generates **two graphs**:
-  - One showing the evolution of dead pages **with Wear Leveling**
-  - One showing the evolution **without Wear Leveling**
-
+The simulator takes as inputs from the user the memory architecture, P/E cycle threshold, and various other parameters which affect the algorithm.
+The simulator produces as an output two graphs, which plot how the number of "dead" pages evolve as time, with and without the Wear Leveling algorithm.
 ---
 
 ## **Simulator Architecture**
