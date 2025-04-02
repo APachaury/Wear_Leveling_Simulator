@@ -15,22 +15,19 @@ The simulator produces as an output two graphs, which plot how the number of "de
 ---
 
 ## Simulator Architecture
-The architecture of the simulator itself is divided into multiple layers of abstraction:
+The architecture of the simulator itself is divided into multiple layers of abstraction, in descending order:
 
-#### 1. wear_leveling.py
-This is the static wear leveling algorithm. The dynamic wear leveling algorithm is implemented in ftl.py because it reduces complexity and inter-dependencies in the code.
+#### 1. wear_leveling.py - This is the static wear leveling algorithm. The dynamic wear leveling algorithm is implemented in ftl.py because it reduces complexity and inter-dependencies in the code.
 
-#### 2. ftl.py
-This is the FTL (Flash Translation Layer). It also contains the dynamic wear leveling algorithm.
+#### 2. ftl.py - This is the FTL (Flash Translation Layer). It also contains the dynamic wear leveling algorithm.
 
-#### 3. flash_memory.py
-This represents the hardware itself, such as pages and blocks, and the operations that are performed at a hardware level.
+#### 3. flash_memory.py - This represents the hardware itself, such as pages and blocks, and the operations that are performed at a hardware level.
 
-config.py houses all the global variables that represent the various thresholds and parameters to be defined as user inputs.
+Here's what the other files do:
 
-workload_generator.py is to generate a stream of operations that the memory must perform, like what a Flash memory controller in a processor would take as an input. Note that this file is a placeholder for now. I do not know how the actual workload of a Flash memory device might look like, and I wish to find out so that I can implement it. Please email me if you can help with this.
-
-simulation.py where is the actual simulation is run, and is the entry point to the simulator. It houses the main function.
+- **config.py** houses all the global variables that represent the various thresholds and parameters to be defined as user inputs.
+- **workload_generator.py** is to generate a stream of operations that the memory must perform, like what a Flash memory controller in a processor would take as an input. Note that this file is a placeholder for now. I do not know how the actual workload of a Flash memory device might look like, and I wish to find out so that I can implement it. Please email me if you can help with this.
+- **simulation.py** is where the actual simulation is run, and is the entry point to the simulator. It houses the main function.
 
 ---
 
@@ -48,4 +45,3 @@ We first decide whether we should even trigger static wear leveling and move dat
 The code is heavily commented and documented, for my own reference.
 
 Any suggestions or constructive criticism are most welcome.
-
