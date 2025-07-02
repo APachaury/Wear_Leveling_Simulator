@@ -1,8 +1,7 @@
 ## @file wear_leveling.py
 ## @brief Implementation of static wear leveling algorithm.
 ## @details This module implements a static wear leveling strategy that periodically moves cold data
-## from less worn pages to more worn pages. This helps distribute wear more evenly across
-## all pages, extending the overall lifetime of the flash memory.
+## from less worn pages to more worn pages.
 
 # Required imports for type hints and numerical operations
 from typing import List, Tuple, Optional, TYPE_CHECKING
@@ -24,11 +23,7 @@ class WearLevelingError(Exception):
 
 class WearLeveling:
     ##
-    # @brief Implements wear leveling strategies for prolonging flash memory lifetime.
-    #
-    # This class focuses on static wear leveling, which periodically moves 
-    # cold data from high-wear blocks to low-wear blocks to distribute wear 
-    # more evenly across the flash memory, extending its overall lifetime.
+    # @brief Implements static wear leveling
     ##
     
     def __init__(self, flash_memory: FlashMemory, ftl: 'FlashTranslationLayer') -> None:
@@ -65,7 +60,7 @@ class WearLeveling:
             
         # Check if any blocks were recently active based on operations
         # Maybe we should change this such that we look at whether a FRACTION of blocks were recently active
-        # instead of any 1 block. This will probably always retirn True
+        # instead of any 1 block. This will probably always return True
         for block in self.flash_memory.blocks:
             if block.was_recently_active(operation_count):
                 return True
