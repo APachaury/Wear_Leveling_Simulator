@@ -36,7 +36,7 @@ def run_simulation(use_wear_leveling: bool = True) -> List[Tuple[int, int]]:
     # @param use_wear_leveling Whether to use wear leveling
     # @return List[Tuple[int, int]] History of dead pages over time
     ##
-    # Step 1: Initialize system components
+    # Initialize system components
     flash_memory = FlashMemory()
     wear_leveling = WearLeveling(flash_memory, ftl=None) if use_wear_leveling else None
     ftl = FTL(flash_memory, wear_leveling)
@@ -45,13 +45,11 @@ def run_simulation(use_wear_leveling: bool = True) -> List[Tuple[int, int]]:
     if wear_leveling:
         wear_leveling.ftl = ftl
     
-    # Step 2: Generate workload
-    # Uses SIMULATION_TIME_UNITS from config.py to determine total simulation time
+    # Generate workload
     workload_gen = WorkloadGenerator()
     workload = workload_gen.generate_sample_workload(config.SIMULATION_TIME_UNITS)
     
-    # Step 3: Process workload
-    # For each operation in workload:
+    # Process workload - For each operation in workload:
     # 1. FTL Layer: Handles logical address translation and garbage collection
     # 2. FlashMemory Layer: Performs physical operations and maintains state
     # 3. Block/Page Layer: Updates individual storage unit states and wear metrics
@@ -60,23 +58,18 @@ def run_simulation(use_wear_leveling: bool = True) -> List[Tuple[int, int]]:
         # Update simulation time in flash memory
         flash_memory.simulation_time = time
         
-        # Handle idle operations (time passes but no actual flash operations occur)
         if op_type == 'idle':
-            # Do nothing for idle operations - they only advance simulation time
-            # but don't count as actual flash operations
+            # Do nothing for idle operations - they only advance simulation time but don't count as actual flash operations
             continue
             
         if op_type == 'write':
-            # write: FTL updates mappings, finds optimal page location, and calls flash_memory.write
-            # which programs the physical page, updates states, and increments operation count
+            # write: FTL updates mappings, finds optimal page location, and calls flash_memory.write which programs the physical page, updates states, and increments operation count
             ftl.write(addr, data)
         elif op_type == 'read':
-            # read: FTL translates logical to physical address and calls flash_memory.read
-            # which accesses physical page data and updates timestamps
+            # read: FTL translates logical to physical address and calls flash_memory.read which accesses physical page data and updates timestamps
             ftl.read(addr)
         else:  # erase
-            # erase_block: FTL updates mappings, free page tracking, and calls flash_memory.erase_block
-            # which erases physical pages, updates PE cycles, and marks dead pages if lifetime exceeded
+            # erase_block: FTL updates mappings, free page tracking, and calls flash_memory.erase_block which erases physical pages, updates PE cycles, and marks dead pages if lifetime exceeded
             ftl.erase_block(addr)
 
         # Perform wear leveling checks based only on operation count
@@ -132,29 +125,23 @@ def plot_results(without_wl_history: List[Tuple[int, int]],
 def main() -> None:
     ##
     # @brief Main simulation entry point.
-    # Runs both simulations, generates visualization, and prints summary statistics.
-    #
-    # The simulation process:
-    # 1. Run without wear leveling
-    # 2. Run with wear leveling
-    # 3. Generate comparison plot
-    # 4. Print statistics comparing both runs
+    # The simulation process runs without wear leveling, then with wear leveling, then generates comparison plot and prints statistics comparing both runs
     ##
     print("Starting Flash Memory Lifetime Simulation...")
     
-    # Step 1: Run simulation without wear leveling
+    # Run simulation without wear leveling
     print("Running simulation without wear leveling...")
     without_wl_history = run_simulation(use_wear_leveling=False)
     
-    # Step 2: Run simulation with wear leveling
+    # Run simulation with wear leveling
     print("Running simulation with wear leveling...")
     with_wl_history = run_simulation(use_wear_leveling=True)
     
-    # Step 3: Generate visualization
+    # Generate visualization
     print("Plotting results...")
     plot_results(without_wl_history, with_wl_history)
     
-    # Step 4: Print summary statistics
+    # Print summary statistics
     # Access history data using list indices:
     # [0][0] = time of first measurement
     # [-1][1] = number of dead pages in last measurement
