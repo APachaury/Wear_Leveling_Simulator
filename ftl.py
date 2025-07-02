@@ -3,7 +3,6 @@
 ## @details This module implements the Flash Translation Layer, which manages the mapping between
 ## logical addresses (used by the host) and physical addresses (actual flash memory locations).
 ## The FTL also handles both static and dynamic wear leveling, and garbage collection
-## to optimize flash memory usage and lifetime.
 
 from typing import Dict, Optional, List, Set, Tuple
 import config
