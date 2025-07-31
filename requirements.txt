@@ -1,0 +1,12 @@
+## @file
+## @brief Package dependencies for the flash memory simulation
+# This file lists all external Python packages required to run the flash memory simulation
+# Install all requirements using: pip install -r requirements.txt
+
+# NumPy: Required for numerical operations, arrays, and statistical functions
+# Used in flash_memory.py for P/E cycle calculations and in workload_generator.py for random distributions
+numpy>=1.21.0
+
+# Matplotlib: Required for creating plots and visualizations
+# Used in simulation.py to generate comparison graphs of memory lifetime
+matplotlib>=3.4.0
