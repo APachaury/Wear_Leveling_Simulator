@@ -35,11 +35,14 @@ Upon completion, the simulator will save the output graph in .png format, compar
 ## Simulator Architecture
 The architecture of the simulator itself is divided into multiple layers of abstraction, in descending order:
 
-#### 1. wear_leveling.py - This is the static wear leveling algorithm. The dynamic wear leveling algorithm is implemented in ftl.py because it reduces complexity and inter-dependencies in the code.
+#### 1. wear_leveling.py
+This is the static wear leveling algorithm. The dynamic wear leveling algorithm is implemented in ftl.py because it reduces complexity and inter-dependencies in the code.
 
-#### 2. ftl.py - This is the FTL (Flash Translation Layer). It also contains the dynamic wear leveling algorithm.
+#### 2. ftl.py
+This is the FTL (Flash Translation Layer). It also contains the dynamic wear leveling algorithm.
 
-#### 3. flash_memory.py - This represents the hardware itself, such as pages and blocks, and the operations that are performed at a hardware level.
+#### 3. flash_memory.py
+This represents the hardware itself, such as pages and blocks, and the operations that are performed at a hardware level.
 
 Here's what the other files do:
 
