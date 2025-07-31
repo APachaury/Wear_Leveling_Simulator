@@ -20,13 +20,13 @@ The simulator produces as an output two graphs, which plot how the number of "de
 
 After having cloned the repository, ensure the requirements are installed. We use numpy and matplotlib.
 
-    ```bash
+    ```markdown
     pip install -r requirements.txt
     ```
 
 ### Running the Simulator
 
-    ```bash
+    ```markdown
     python simulation.py
     ```
 
