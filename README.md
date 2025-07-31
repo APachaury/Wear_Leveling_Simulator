@@ -26,7 +26,7 @@ After having cloned the repository, ensure the requirements are installed. We us
 
 ### Running the Simulator
 
-```bash
+    ```bash
     python simulation.py
     ```
 
