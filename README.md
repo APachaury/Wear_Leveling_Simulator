@@ -34,10 +34,10 @@ Here's what the other files do:
 ## Wear Leveling Algorithm
 
 ### Dynamic Wear Leveling Algorithm
-Whenever a write operation is to be performed, we determine a set of candidate blocks, which are among the blocks with the least wear in the memory. We choose to write to the first free page from these candidate blocks. If there are no free pages or free blocks, we trigger garbage collection and try again.
+![Flowchart for the Dynamic Wear Leveling Algorithm](DynamicWL.png)
 
 ### Static Wear Leveling Algorithm
-We first decide whether we should even trigger static wear leveling and move data around, based on how long it has been since we last triggered static wear leveling. We also do not try wear leveling if the Flash memory has not been active for some time, since not much would have changed. If we do trigger static wear leveling, we move data from blocks with high wear to blocks with low wear, based on the difference in their wear. If a high-wear block has not been active for long enough, we leave it as it is since the data is dormant.
+![Flowchart for the Static Wear Leveling Algorithm](StaticWL.png)
 
 ---
 
