@@ -5,7 +5,6 @@
 ## writing, and erasing data while tracking wear levels and memory status.
 
 # Required imports for numerical operations and type hinting
-import numpy as np
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 import config
@@ -15,10 +14,10 @@ class PageState(Enum):
     ##
     # @brief Represents the possible states of a flash memory page
     ##
-    ERASED = 0    # Page has been erased and is ready for programming
-    PROGRAMMED = 1  # Page contains valid programmed data
-    INVALID = 2    # Page data has been marked as invalid (needs erasure)
-    DEAD = 3       # Page has exceeded its maximum P/E cycles
+    ERASED = 0
+    PROGRAMMED = 1
+    INVALID = 2
+    DEAD = 3
 
 @dataclass
 class Page:
@@ -26,20 +25,12 @@ class Page:
     # @brief Represents a single page in flash memory.
     # A page is the smallest unit that can be programmed.
     ##
-    # Current state of this page
-    state: PageState = PageState.ERASED
     
-    # Data stored in this page (None if erased)
-    data: Optional[bytes] = None
-    
-    # Number of program/erase cycles this page has undergone
-    pe_cycles: int = 0
-    
-    # Timestamp of when this page was last written
-    last_write_time: int = 0
-    
-    # Timestamp of when this page's data was last moved for wear leveling
-    last_moved_time: int = 0
+    state: PageState = PageState.ERASED # Current state of page
+    data: Optional[bytes] = None # Data stored in page (None if erased)
+    pe_cycles: int = 0 # Number of program/erase cycles page has undergone
+    last_write_time: int = 0 # Timestamp of when page was last written
+    last_moved_time: int = 0 # Timestamp of when page's data was last moved for wear leveling
 
 class Block:
     ##
@@ -53,24 +44,13 @@ class Block:
         #
         # @param block_id Unique identifier for this block
         ##
-        # Store the block's identifier
-        self.block_id = block_id
         
-        # Create a list of empty pages for this block
-        self.pages = [Page() for _ in range(config.PAGES_PER_BLOCK)]
-        
-        # Counter for how many times this block has been erased
-        self.erase_count = 0
-        
-        # Track how many pages in this block contain valid data
-        self.valid_pages_count = config.PAGES_PER_BLOCK
-        
-        # Track when this block was last used (in terms of operations, not wall clock time)
-        # This helps identify hot/cold blocks based on actual usage patterns
-        self.last_operation_number = 0
-        
-        # Track when this block was last used (in terms of simulation time)
-        self.last_operation_time = 0
+        self.block_id = block_id # Store the block's identifier
+        self.pages = [Page() for _ in range(config.PAGES_PER_BLOCK)] # Create a list of empty pages for this bloc
+        self.erase_count = 0 # Counter for how many times this block has been erased
+        self.valid_pages_count = config.PAGES_PER_BLOCK # Track how many pages in this block contain valid data
+        self.last_operation_number = 0 # Track when this block was last used (in terms of operations, not wall clock time)
+        self.last_operation_time = 0 # Track when this block was last used (in terms of simulation time)
         
     def was_recently_active(self, current_operation: int) -> bool:
         ##
@@ -91,13 +71,15 @@ class Block:
         ##
         # Check if all pages in the block are dead
         if all(page.state == PageState.DEAD for page in self.pages):
-            return False
+            print(f"All pages in block {self.block_id} are dead")
+            return True
         
         # Check if block has exceeded its P/E cycle limit
-        if self.erase_count >= config.MAX_BLOCK_ERASES:
+        if self.erase_count >= config.MAX_PE_CYCLES_FOR_ENDURANCE:
             for page in self.pages:
                 page.state = PageState.DEAD
-            return False
+            print(f"Block {self.block_id} has exceeded its P/E cycle limit")
+            return True
             
         # Increment the block's erase counter
         self.erase_count += 1
@@ -115,7 +97,7 @@ class Block:
                 pages_erased += 1
                 
                 # Check if page has exceeded its lifetime
-                if page.pe_cycles >= config.MAX_PE_CYCLES:
+                if page.pe_cycles >= config.MAX_PE_CYCLES_FOR_ENDURANCE:
                     page.state = PageState.DEAD
                     
         return pages_erased > 0
@@ -280,35 +262,4 @@ class FlashMemory:
             'invalid_pages': sum(1 for page in block.pages if page.state == PageState.INVALID),
             'erased_pages': sum(1 for page in block.pages if page.state == PageState.ERASED),
             'programmed_pages': sum(1 for page in block.pages if page.state == PageState.PROGRAMMED)
-        }
-
-    def get_memory_status(self) -> Dict:
-        ##
-        # @brief Get overall memory health status.
-        #
-        # @return Dict containing memory-wide statistics
-        ##
-        total_erased = 0
-        total_programmed = 0
-        total_invalid = 0
-        total_dead = 0
-        
-        for block in self.blocks:
-            for page in block.pages:
-                if page.state == PageState.ERASED:
-                    total_erased += 1
-                elif page.state == PageState.PROGRAMMED:
-                    total_programmed += 1
-                elif page.state == PageState.INVALID:
-                    total_invalid += 1
-                else:  # DEAD
-                    total_dead += 1
-        
-        return {
-            'PHYSICAL_PAGES': config.PHYSICAL_BLOCKS * config.PAGES_PER_BLOCK,
-            'erased_pages': total_erased,
-            'programmed_pages': total_programmed,
-            'invalid_pages': total_invalid,
-            'dead_pages': total_dead,
-            'health_history': self.history
         }
