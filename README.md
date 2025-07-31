@@ -44,6 +44,7 @@ This is the FTL (Flash Translation Layer). It also contains the dynamic wear lev
 #### 3. flash_memory.py
 This represents the hardware itself, such as pages and blocks, and the operations that are performed at a hardware level.
 
+
 Here's what the other files do:
 
 - **config.py** houses all the global variables that represent the various thresholds and parameters to be defined as user inputs.
