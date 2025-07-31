@@ -11,7 +11,7 @@
 ## - plot_results(): Creates visualization comparing both scenarios
 ## - main(): Entry point that runs both simulations and generates comparisons
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt # type: ignore
 from typing import List, Tuple
 import config
 from flash_memory import FlashMemory
@@ -44,34 +44,34 @@ def run_simulation(use_wear_leveling: bool = True) -> List[Tuple[int, int]]:
     # Connect wear leveling to FTL (circular reference resolved)
     if wear_leveling:
         wear_leveling.ftl = ftl
-    
+        
     # Generate workload
     workload_gen = WorkloadGenerator()
     workload = workload_gen.generate_sample_workload(config.SIMULATION_TIME_UNITS)
     
-    # Process workload - For each operation in workload:
-    # 1. FTL Layer: Handles logical address translation and garbage collection
-    # 2. FlashMemory Layer: Performs physical operations and maintains state
-    # 3. Block/Page Layer: Updates individual storage unit states and wear metrics
-    
+     # Only process write operations
+    write_ops = [(i+1, time, addr, data) for i, (time, op_type, addr, data) in enumerate(workload) if op_type == 'write']
+    read_ops = [(i+1, time, addr, data) for i, (time, op_type, addr, data) in enumerate(workload) if op_type == 'read']
+    erase_ops = [(i+1, time, addr, data) for i, (time, op_type, addr, data) in enumerate(workload) if op_type == 'erase']
+    idle_ops = [(i+1, time, addr, data) for i, (time, op_type, addr, data) in enumerate(workload) if op_type == 'idle']
+    print(f"\nFound {len(write_ops)} write operations, {len(read_ops)} read operations, {len(erase_ops)} erase operations, {len(idle_ops)} idle operations in workload:")
+    total_physical_pages = config.PHYSICAL_BLOCKS * config.PAGES_PER_BLOCK
+
     for time, op_type, addr, data in workload:
-        # Update simulation time in flash memory
-        flash_memory.simulation_time = time
+        flash_memory.simulation_time = time # Update simulation time in flash memory
         
         if op_type == 'idle':
-            # Do nothing for idle operations - they only advance simulation time but don't count as actual flash operations
-            continue
+            continue # Do nothing for idle operations - they only advance simulation time but don't count as actual flash operations
             
         if op_type == 'write':
-            # write: FTL updates mappings, finds optimal page location, and calls flash_memory.write which programs the physical page, updates states, and increments operation count
-            ftl.write(addr, data)
+            ftl.write(addr, data) # FTL updates mappings, finds optimal page location, and calls flash_memory.write which programs the physical page, updates states, and increments operation count
+        elif op_type == 'erase':
+            # Convert logical address to block ID for erase
+            block_id = addr // config.PAGES_PER_BLOCK
+            ftl.erase(block_id) # Erase the entire block
         elif op_type == 'read':
-            # read: FTL translates logical to physical address and calls flash_memory.read which accesses physical page data and updates timestamps
-            ftl.read(addr)
-        else:  # erase
-            # erase_block: FTL updates mappings, free page tracking, and calls flash_memory.erase_block which erases physical pages, updates PE cycles, and marks dead pages if lifetime exceeded
-            ftl.erase_block(addr)
-
+            ftl.read(addr) # FTL translates logical to physical address and calls flash_memory.read which accesses physical page data and updates timestamps
+        
         # Perform wear leveling checks based only on operation count
         # This ensures wear leveling is triggered by actual flash operations, not just time
         if wear_leveling is not None:
@@ -79,14 +79,37 @@ def run_simulation(use_wear_leveling: bool = True) -> List[Tuple[int, int]]:
                 if wear_leveling.should_trigger_static_wear_leveling(flash_memory.operation_count):
                     if wear_leveling.perform_static_wear_leveling(flash_memory.operation_count):
                         print(f"Static wear leveling performed at operation {flash_memory.operation_count} (time: {time})")
-            
+        
+        total_dead_pages = sum(flash_memory.get_block_status(i)['dead_pages'] for i in range(config.PHYSICAL_BLOCKS))
+        flash_memory.history.append((time, total_dead_pages)) # Track history of dead pages over time
+        
         # Check if simulation should end (too many dead pages)
-        # SIMULATION_END_THRESHOLD from config.py determines when to stop
-        status = flash_memory.get_memory_status()
-        if status['dead_pages'] / status['PHYSICAL_PAGES'] > config.SIMULATION_END_THRESHOLD:
-            print(f"Simulation ended early at time {time} due to excessive dead pages")
+        if total_dead_pages / total_physical_pages > config.SIMULATION_END_THRESHOLD:
+            print(f"Simulation ended at time {time} due to dead page threshold.")
             break
-            
+    
+    # Print wear statistics
+    print("\nWear Level Statistics:")
+    print(f"{'With' if use_wear_leveling else 'Without'} Wear Leveling:")
+    
+    # Calculate statistics for written pages using FTL's tracking
+    pe_cycles = []
+    for physical_addr in ftl.written_pages:
+        block_id = physical_addr // config.PAGES_PER_BLOCK
+        page_id = physical_addr % config.PAGES_PER_BLOCK
+        page = flash_memory.blocks[block_id].pages[page_id]
+        pe_cycles.append(page.pe_cycles)
+    
+    if pe_cycles:
+        avg_pe = sum(pe_cycles) / len(pe_cycles)
+        max_pe = max(pe_cycles)
+        min_pe = min(pe_cycles)
+        print(f"Pages written to: {len(ftl.written_pages)}")
+        print(f"Average PE cycles: {avg_pe:.2f}")
+        print(f"Max PE cycles: {max_pe}")
+        print(f"Min PE cycles: {min_pe}")
+        print(f"PE cycle variance: {max_pe - min_pe}")
+
     return flash_memory.history
 
 def plot_results(without_wl_history: List[Tuple[int, int]], 
@@ -118,8 +141,19 @@ def plot_results(without_wl_history: List[Tuple[int, int]],
     plt.grid(True)
     plt.legend()
     
+    # Add simulation parameters as text
+    param_text = (
+        f"Simulation Parameters:\n"
+        f"Time Units: {config.SIMULATION_TIME_UNITS}\n"
+        f"Max P/E Cycles: {config.MAX_PE_CYCLES_FOR_ENDURANCE}\n"
+        f"Number of Blocks: {config.PHYSICAL_BLOCKS}\n"
+        f"Pages per Block: {config.PAGES_PER_BLOCK}\n"
+    )
+    # Position text in upper left, outside the plot area
+    plt.gcf().text(0.02, 0.98, param_text, fontsize=8, va='top')
+    
     # Save plot to file
-    plt.savefig('flash_memory_lifetime_comparison.png')
+    plt.savefig('flash_memory_lifetime_comparison.png', bbox_inches='tight')
     plt.close()
 
 def main() -> None:
@@ -141,22 +175,7 @@ def main() -> None:
     print("Plotting results...")
     plot_results(without_wl_history, with_wl_history)
     
-    # Print summary statistics
-    # Access history data using list indices:
-    # [0][0] = time of first measurement
-    # [-1][1] = number of dead pages in last measurement
-    print("\nSimulation Results:")
-    print(f"Without Wear Leveling:")
-    print(f"- Time to first dead page: {without_wl_history[0][0]} cycles")
-    print(f"- Final dead page count: {without_wl_history[-1][1]}")
-    
-    print(f"\nWith Wear Leveling:")
-    print(f"- Time to first dead page: {with_wl_history[0][0]} cycles")
-    print(f"- Final dead page count: {with_wl_history[-1][1]}")
-    
     print("\nResults have been saved to 'flash_memory_lifetime_comparison.png'")
 
-# Main guard: Only run the simulation if this file is run directly
-# If this file is imported as a module, the simulation won't auto-start
 if __name__ == "__main__":
     main()
