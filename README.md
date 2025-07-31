@@ -14,6 +14,37 @@ The simulator produces as an output two graphs, which plot how the number of "de
 
 ---
 
+## How to Use
+
+### Prerequisites
+
+After having cloned the repository, ensure the requirements are installed. We use numpy and matplotlib.
+
+1.  **Install from requirements file (Recommended):**
+    This command installs all necessary libraries from the `requirements.txt` file.
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+2.  **Manual Installation:**
+    Alternatively, you can install each library individually.
+    ```bash
+    pip install numpy matplotlib
+    ```
+
+### Running the Simulator
+
+1.  **Configure Parameters:** Open `config.py` and modify the variables to define the memory architecture, P/E cycle threshold, and other parameters for your simulation.
+
+2.  **Execute the Script:** Run the main simulation file from your terminal.
+    ```bash
+    python simulation.py
+    ```
+
+Upon completion, the simulator will save the output graph in .png format, comparing the memory lifetime with and without the wear leveling algorithm.
+
+---
+
 ## Simulator Architecture
 The architecture of the simulator itself is divided into multiple layers of abstraction, in descending order:
 
