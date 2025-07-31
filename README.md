@@ -20,12 +20,10 @@ The simulator produces as an output two graphs, which plot how the number of "de
 
 After having cloned the repository, ensure the requirements are installed. We use numpy and matplotlib.
 
-    ```markdown
     pip install -r requirements.txt
 
 ### Running the Simulator
 
-    ```markdown
     python simulation.py
 
 The variables used to define the memory architecture, max P/E cycle threshold, and algorithm-specific parameters can be modified in config.py. Note that the runtime of the simulator strongly depends upon how large these constants are.
