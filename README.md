@@ -1,6 +1,6 @@
 # Wear Leveling Simulator
 
-> WARNING: This code is not fully functional yet. It needs debugging. Please do not use it.
+> WARNING: This code is not fully functional yet. It needs debugging. That being said, the architecture of the simulator is there and it can still be run.
 
 Contact: aniketpach@gmail.com  
 
@@ -42,6 +42,6 @@ We first decide whether we should even trigger static wear leveling and move dat
 ---
 
 ## Additional Notes
-The code is heavily commented and documented, for my own reference.
+The code is commented and documented, for my own reference.
 
 Any suggestions or constructive criticism are most welcome.
